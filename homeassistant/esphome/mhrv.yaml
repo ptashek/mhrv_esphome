@@ -1,0 +1,103 @@
+esphome:
+  name: mhrv
+  friendly_name: MHRV System
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+  level: INFO
+
+# Enable Home Assistant API
+# Replace secrets with your own as appropriate
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "MHRV Fallback Hotspot"
+    password: !secret wifi_fallback_password
+
+captive_portal:
+
+# Replace GPIO pin number with your own
+# GPIO0 -> D3 on Wemos D1 Mini
+one_wire:
+  - platform: gpio
+    pin: GPIO0
+
+
+# Replace sensor addresses and calibration offsets below with your own
+# This config will read each sensor every second, accumulate 5 data points and report the 90th percentile value
+# First reading for each sensor is always sent as-is on startup
+sensor:
+- platform: dallas_temp
+  address: 0x1000000000000028
+  name: "Supply Port"
+  update_interval: 1s
+  unit_of_measurement: "°C"
+  device_class: "temperature"
+  state_class: "measurement"
+  accuracy_decimals: 2
+  filters:
+   - offset: 0
+   - quantile:
+        window_size: 5
+        send_every: 5
+        send_first_at: 1
+        quantile: .9
+- platform: dallas_temp
+  address: 0x2000000000000028
+  name: "Extract Port"
+  update_interval: 1s
+  unit_of_measurement: "°C"
+  device_class: "temperature"
+  state_class: "measurement"
+  accuracy_decimals: 2
+  filters:
+    - offset: 0
+    - quantile:
+        window_size: 5
+        send_every: 5
+        send_first_at: 1
+        quantile: .9
+- platform: dallas_temp
+  address:  0x3000000000000028
+  name: "Intake Port"
+  update_interval: 1s
+  unit_of_measurement: "°C"
+  device_class: "temperature"
+  state_class: "measurement"
+  accuracy_decimals: 2
+  filters:
+     - offset: 0
+     - quantile:
+        window_size: 5
+        send_every: 5
+        send_first_at: 1
+        quantile: .9
+- platform: dallas_temp
+  address: 0x4000000000000028
+  name: "Exhaust Port"
+  update_interval: 1s
+  unit_of_measurement: "°C"
+  device_class: "temperature"
+  state_class: "measurement"
+  accuracy_decimals: 2
+  filters:
+     - offset: 0
+     - quantile:
+        window_size: 5
+        send_every: 5
+        send_first_at: 1
+        quantile: .9

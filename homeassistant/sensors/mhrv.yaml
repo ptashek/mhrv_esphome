@@ -1,0 +1,22 @@
+template:
+  - sensor:
+      - name: "MHRV Heat Recovery Efficiency"
+        unique_id: "mhrv_heat_recovery_efficiency"
+        unit_of_measurement: "%"
+        state_class: "measurement"
+        availability: >
+          {% set supply = states('sensor.mhrv_supply_port') | float(none) %}
+          {% set extract = states('sensor.mhrv_extract_port') | float(none) %}
+          {% set intake = states('sensor.mhrv_intake_port') | float(none) %}
+          {{ supply is not none and extract is not none and intake is not none }}
+        state: >
+          {% set supply = states('sensor.mhrv_supply_port') | float(none) %}
+          {% set extract = states('sensor.mhrv_extract_port') | float(none) %}
+          {% set intake = states('sensor.mhrv_intake_port') | float(none) %}
+          {% if extract == intake and extract is not none %}
+            0
+          {% elif supply is not none and extract is not none and intake is not none and extract != intake %}
+            {{ ((supply - intake) / (extract - intake) * 100) | round(2) }}
+          {% else %}
+            unavailable
+          {% endif %}
